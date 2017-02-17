@@ -12,6 +12,10 @@
 #pragma comment(lib, "SOIL.lib")
 #include <SOIL/SOIL.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 // other includes
 #include "shader.h"
 
@@ -34,14 +38,14 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // use core-profile
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // unresizable
 
-											  // create a GLFW window object that we can use for GLFW's funcitons
+	// create a GLFW window object that we can use for GLFW's funcitons
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
 	glfwMakeContextCurrent(window); // make the context on the current thread 创建环境
 
 	glfwSetKeyCallback(window, key_callback); // set the required callback functions
 
-											  // GLEW 
-											  // set to use modern approach to retrive function pointer and extensions
+	// GLEW 
+	// set to use modern approach to retrive function pointer and extensions
 	glewExperimental = GL_TRUE;
 	// initialize GLEW to setup te OpenGL function pointers
 	glewInit();
@@ -95,8 +99,8 @@ int main()
 		// positions		// colors		   // texture coord.
 		0.5f,  0.5f, 0.0f,	1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
 		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-	   -0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-	   -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f
+		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f
 	};
 	GLuint indices[] = {
 		0, 1, 3,
@@ -108,6 +112,7 @@ int main()
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+
 	// Bind the Vertex Array Object first, then bind and 
 	// set vertex buffer(s) and attribute pointer(s).
 	glBindVertexArray(VAO);
@@ -130,7 +135,7 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // it's safe to unbind VBO.
 	glBindVertexArray(0); // unbind VAO after configuration.					  
 
-						  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// GAME LOOP
 	while (!glfwWindowShouldClose(window))
@@ -162,6 +167,14 @@ int main()
 		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture2"), 1);
 
 		glUniform1f(glGetUniformLocation(ourShader.Program, "mixValue"), mixValue);
+
+		// Transformation
+		glm::mat4 trans;
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, glm::radians((GLfloat)glfwGetTime()*50.0f), glm::vec3(0.0, 0.0, 1.0));
+		trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+		GLuint transformLoc = glGetUniformLocation(ourShader.Program, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
